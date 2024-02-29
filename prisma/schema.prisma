@@ -1,0 +1,53 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [uuidOssp(map: "uuid-ossp"), pgcrypto(map: "pgcrypto")]
+}
+
+model User {
+  id        String    @id @default(uuid()) @map("id") @db.Uuid
+  creatorId String?    @map("creator_id") @db.Uuid
+  updaterId String?    @map("updater_id") @db.Uuid
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  email String @unique @db.VarChar(50)
+  hash  String @db.VarChar(100)
+
+  firsName String?    @map("first_name") @db.VarChar(50)
+  lastName String?    @map("last_name") @db.VarChar(50)
+  
+  bookmarks Bookmark[]
+
+  @@map("users")
+}
+
+model Bookmark {
+  id        String    @id @default(uuid()) @map("id") @db.Uuid
+  creatorId String?    @map("creator_id") @db.Uuid
+  updaterId String?    @map("updater_id") @db.Uuid
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  title       String  @db.Text
+  description String? @db.Text
+  link        String  @db.VarChar(255)
+
+  userId String @map("user_id") @db.Uuid
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@map("bookmarks")
+}
